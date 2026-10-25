@@ -1,0 +1,290 @@
+<!doctype html>
+<!--
+  out/mission-approved/index.html — mission-approved (안 A, scenes.md 2차 장면표)
+  1920×1080 · 30fps · 450f (15s). 값은 모두 :root CSS 변수(docs 토큰 이름) 한 곳에서 읽는다.
+  src/ 파일은 상대 경로로 감싸서만 쓴다 (고치지 않음).
+-->
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* 폰트: docs/design.md 3장 A (로컬 파일) */
+      @font-face { font-family: "Pretendard"; font-weight: 400; src: url("src/assets/fonts/Pretendard-Regular.otf") format("opentype"); }
+      @font-face { font-family: "Pretendard"; font-weight: 600; src: url("src/assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+      @font-face { font-family: "Pretendard"; font-weight: 700; src: url("src/assets/fonts/Pretendard-Bold.otf") format("opentype"); }
+
+      :root {
+        /* docs/design.md 4장 간격 */
+        --space-large: 32px;
+        /* docs/video.md 1장 */
+        --video-scale: 2.8;
+        /* docs/video.md 2장 배경 */
+        --video-bg: #f7f7f8;
+        --video-card: #ffffff;
+        --video-tint: #edf1ff;
+        --video-end-bg: #18191b;
+        /* docs/video.md 3장 글자 (굵기 크기/행간 글꼴) */
+        --video-display: 700 78.4px/95.2px "Pretendard", sans-serif;
+        --video-section: 700 56px/78.4px "Pretendard", sans-serif;
+        --video-body: 400 42px/67.2px "Pretendard", sans-serif;
+        --video-text: #18191b;
+        --video-accent: #3759de;
+        --video-end-text: #ffffff;
+        /* docs/video.md 4장 폰 프레임 */
+        --video-phone-w: 390px;
+        --video-phone-h: 844px;
+        --video-phone-bg: #ffffff;
+        --video-phone-line: 1px solid #e9eaed;
+        --video-phone-shadow: 0 8px 24px 0 #0000001f;
+        /* docs/video.md 5장 · design.md 4장: 단독 parts 그림자 Shadow/md */
+        --shadow-md: 0 4px 12px 0 #00000014;
+        /* design.md 4장: 배지 모서리 */
+        --radius-button: 8px;
+
+        /* docs/motion.md 1장 길이 (f) */
+        --duration-4: 4;
+        --duration-6: 6;
+        --duration-9: 9;
+        --duration-12: 12;
+        --duration-18: 18;
+        --duration-45: 45;
+        /* docs/motion.md 1장 곡선 */
+        --curve-out: 0.33, 1, 0.68, 1;
+        --curve-in-out: 0.65, 0, 0.35, 1;
+        --curve-in: 0.32, 0, 0.67, 0;
+        /* docs/motion.md 4장 머무는 시간 (f) */
+        --hold-breath: 6;
+        --hold-beat: 12;
+        --hold-line: 24;
+        --hold-screen: 60;
+        /* docs/motion.md 5장 카메라 (camera-rise 거리는 N4 (a): 400px × 1080/720) */
+        --camera-rise-y: 600px;
+        --camera-rise-rotate-from: 35deg;
+        --camera-rise-rotate-to: 8deg;
+        --camera-rise-scale-from: 0.8;
+        --camera-push-scale: 1.4;
+        /* N3 (a): badge-approved 처음 크기 */
+        --badge-approved-scale-from: 0.8;
+        /* N5 (a): PNG 안 배지 자리 (@1x 실측) */
+        --badge-slot-x: 20px;
+        --badge-slot-y: 310px;
+        --badge-slot-w: 108px;
+        --badge-slot-h: 32px;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--video-bg); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+
+      .full { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+      .center { display: flex; align-items: center; justify-content: center; }
+
+      #bg-main { background: var(--video-bg); }
+      #bg-end { background: var(--video-end-bg); }
+
+      .line { white-space: nowrap; text-align: center; letter-spacing: 0; }
+      .line-display { font: var(--video-display); color: var(--video-text); }
+      .accent { color: var(--video-accent); }
+      .line-section { font: var(--video-section); color: var(--video-end-text); }
+      .w { opacity: 0; }
+
+      /* 폰 */
+      #cam { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+      #rise {
+        position: absolute;
+        left: calc((1920px - var(--video-phone-w)) / 2);
+        top: calc((1080px - var(--video-phone-h)) / 2);
+        width: var(--video-phone-w);
+        height: var(--video-phone-h);
+        transform-origin: 50% 100%;
+      }
+      #phone {
+        position: absolute; inset: 0;
+        background: var(--video-phone-bg);
+        outline: var(--video-phone-line);
+        box-shadow: var(--video-phone-shadow);
+      }
+      #screen { position: absolute; inset: 0; opacity: 0; }
+      #screen img { position: absolute; left: 0; top: 0; width: var(--video-phone-w); height: var(--video-phone-h); }
+      .slot {
+        position: absolute;
+        left: var(--badge-slot-x); top: var(--badge-slot-y);
+        width: var(--badge-slot-w); height: var(--badge-slot-h);
+      }
+      #badge-cover { background: var(--video-card); }
+      #badge { opacity: 0; border-radius: var(--radius-button); overflow: hidden; }
+      #badge iframe { display: block; width: var(--badge-slot-w); height: var(--badge-slot-h); border: 0; background: transparent; }
+      #badge-dark { position: absolute; inset: 0; background: var(--video-end-bg); opacity: 0; }
+
+      /* 엔딩 */
+      #end-group { flex-direction: column; }
+      #logo-wrap { opacity: 0; box-shadow: var(--shadow-md); }
+      #logo-wrap .z { zoom: var(--video-scale); width: 149px; height: 19px; }
+      #logo-wrap iframe { display: block; width: 149px; height: 19px; border: 0; background: transparent; }
+      #end-sub { opacity: 0; font: var(--video-body); color: var(--video-end-text); margin-top: var(--space-large); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1920" data-height="1080">
+
+      <!-- 비트 1–7 바탕 -->
+      <div id="bg-main" class="full clip" data-start="0" data-duration="9.8" data-track-index="0" style="z-index:1"></div>
+
+      <!-- 비트 1: 글줄 1 (0–45f, 36–45f에 바뀜) -->
+      <div id="line1" class="full center clip" data-start="0" data-duration="1.5" data-track-index="1" style="z-index:2">
+        <p id="line1-text" class="line line-display"><span class="w" id="l1w1">이번</span> <span class="w" id="l1w2">달</span> <span class="w" id="l1w3">미션</span></p>
+      </div>
+
+      <!-- 비트 2–3: 글줄 2 (36–84f) -->
+      <div id="line2" class="full center clip" data-start="1.2" data-duration="1.6" data-track-index="2" style="z-index:3">
+        <p id="line2-text" class="line line-display"><span class="w" id="l2w1">미션을</span> <span class="w accent" id="l2w2">완성했어요!</span></p>
+      </div>
+
+      <!-- 비트 3–7: 폰 (75–294f) -->
+      <div id="stage" class="full clip" data-start="2.5" data-duration="7.3" data-track-index="3" style="z-index:4" data-layout-allow-overflow>
+        <div id="cam">
+          <div id="rise">
+            <div id="phone">
+              <div id="screen">
+                <img id="screen-img" src="src/screens/04-approved.png" alt="04-approved" />
+                <div id="badge-cover" class="slot"></div>
+              </div>
+              <div id="badge" class="slot">
+                <iframe id="badge-frame" src="src/parts/badge-approved.html" scrolling="no" title="badge-approved"></iframe>
+                <div id="badge-dark"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 비트 8–10 바탕 -->
+      <div id="bg-end" class="full clip" data-start="9.8" data-duration="5.2" data-track-index="4" style="z-index:5"></div>
+
+      <!-- 비트 8–9: 검은 면 글줄 (294–378f) -->
+      <div id="end-line" class="full center clip" data-start="9.8" data-duration="2.8" data-track-index="5" style="z-index:6">
+        <p id="end-line-text" class="line line-section"><span class="w" id="ew1">결과물이</span> <span class="w" id="ew2">승인되어</span> <span class="w" id="ew3">내</span> <span class="w" id="ew4">자산에</span> <span class="w" id="ew5">등록됐어요.</span></p>
+      </div>
+
+      <!-- 비트 10: 엔딩 (378–450f) -->
+      <div id="end-card" class="full center clip" data-start="12.6" data-duration="2.4" data-track-index="6" style="z-index:7">
+        <div id="end-group" class="center">
+          <div id="logo-wrap"><div class="z"><iframe id="logo-frame" src="src/parts/logo.html?state=logotype-white" scrolling="no" title="logo"></iframe></div></div>
+          <p id="end-sub" class="line">내 자산에서 보기</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const FPS = 30;
+        const css = getComputedStyle(document.documentElement);
+        const v = (n) => css.getPropertyValue("--" + n).trim();
+        const num = (n) => parseFloat(v(n));
+        const f = (n) => num(n) / FPS; // 프레임 토큰 → 초
+        const at = (frame) => frame / FPS;
+
+        // cubic-bezier → GSAP ease 함수 (결정적)
+        function bezier(name) {
+          const [x1, y1, x2, y2] = v(name).split(",").map(parseFloat);
+          const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+          const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+          const sx = (t) => ((ax * t + bx) * t + cx) * t;
+          const sy = (t) => ((ay * t + by) * t + cy) * t;
+          const dx = (t) => (3 * ax * t + 2 * bx) * t + cx;
+          return (x) => {
+            if (x <= 0) return 0;
+            if (x >= 1) return 1;
+            let t = x;
+            for (let i = 0; i < 8; i++) {
+              const e = sx(t) - x, d = dx(t);
+              if (Math.abs(e) < 1e-7) break;
+              if (Math.abs(d) < 1e-6) break;
+              t -= e / d;
+            }
+            let lo = 0, hi = 1;
+            if (Math.abs(sx(t) - x) > 1e-6) {
+              t = x;
+              for (let i = 0; i < 40; i++) { const s = sx(t); if (s < x) lo = t; else hi = t; t = (lo + hi) / 2; }
+            }
+            return sy(t);
+          };
+        }
+        const OUT = bezier("curve-out"), INOUT = bezier("curve-in-out"), IN = bezier("curve-in");
+
+        // 모션 토큰 (docs/motion.md 2장)
+        const pop = { duration: f("duration-6"), ease: OUT };
+        const popOut = { duration: f("duration-6"), ease: IN };
+        const swap = { duration: f("duration-9"), ease: INOUT };
+        const stagger = num("duration-9");
+
+        const tl = gsap.timeline({ paused: true });
+
+        // 비트 1 (0–36f): 단어 3개 motion-pop, 간격 duration-9
+        ["#l1w1", "#l1w2", "#l1w3"].forEach((id, i) => {
+          tl.fromTo(id, { opacity: 0 }, { opacity: 1, ...pop }, at(i * stagger));
+        });
+
+        // 비트 2 (36–75f): 같은 자리에서 앞 줄을 바꿔 씀 motion-swap → "완성했어요!" motion-pop
+        tl.fromTo("#line1-text", { opacity: 1 }, { opacity: 0, ...swap }, at(36));
+        tl.fromTo("#l2w1", { opacity: 0 }, { opacity: 1, ...swap }, at(36));
+        tl.fromTo("#l2w2", { opacity: 0 }, { opacity: 1, ...pop }, at(36) + f("duration-9"));
+
+        // 비트 3 (75–126f): camera-rise + 글줄 2 퇴장 motion-swap (75–84)
+        tl.fromTo("#line2-text", { opacity: 1 }, { opacity: 0, ...swap }, at(75));
+        tl.fromTo("#rise",
+          { y: num("camera-rise-y"), rotationX: num("camera-rise-rotate-from"), scale: num("camera-rise-scale-from") },
+          { y: 0, rotationX: num("camera-rise-rotate-to"), scale: 1, duration: f("duration-45"), ease: OUT },
+          at(75));
+
+        // 비트 4 (126–195f): 화면 내용 페이드 인 motion-swap
+        tl.fromTo("#screen", { opacity: 0 }, { opacity: 1, ...swap }, at(126));
+
+        // 비트 5 (195–207f): 배지 motion-pop, scale N3
+        tl.fromTo("#badge",
+          { opacity: 0, scale: num("badge-approved-scale-from") },
+          { opacity: 1, scale: 1, ...pop }, at(195));
+
+        // 비트 6 (207–288f): camera-push. 기준 = 배지 · 제목 묶음 (폰 안 @1x 실측 x20–170 · y310–388)
+        const phoneW = num("video-phone-w"), phoneH = num("video-phone-h");
+        const phoneL = (1920 - phoneW) / 2, phoneT = (1080 - phoneH) / 2;
+        const tilt = Math.cos(num("camera-rise-rotate-to") * Math.PI / 180); // 원근 없음: 세로만 cos만큼
+        const toScreen = (px, py) => [phoneL + px, phoneT + phoneH - (phoneH - py) * tilt];
+        const [gx, gy] = toScreen((20 + 170) / 2, (310 + 388) / 2);
+        const push = num("camera-push-scale");
+        gsap.set("#cam", { transformOrigin: gx + "px " + gy + "px" });
+        tl.fromTo("#cam", { scale: 1, x: 0 }, { scale: push, x: 960 - gx, duration: f("duration-45"), ease: INOUT }, at(207));
+
+        // 비트 7 (288–294f): camera-wipe. 배지가 커져 프레임을 덮고, 바탕이 video-end-bg로 바뀜 (N6 b)
+        const bx = num("badge-slot-x"), by = num("badge-slot-y"), bw = num("badge-slot-w"), bh = num("badge-slot-h");
+        const [bsx0, bsy0] = toScreen(bx + bw / 2, by + bh / 2);
+        const bsx = gx + (bsx0 - gx) * push + (960 - gx), bsy = gy + (bsy0 - gy) * push;
+        const r = num("radius-button");
+        const hw = (bw / 2 - r) * push, hh = (bh / 2 - r) * push * tilt; // 모서리 둥근 부분을 뺀 반폭 · 반높이
+        const cover = Math.ceil(Math.max(Math.max(bsx, 1920 - bsx) / hw, Math.max(bsy, 1080 - bsy) / hh)); // 프레임을 덮는 배율 (기하 계산)
+        tl.fromTo("#badge", { scale: 1 }, { scale: cover, duration: f("duration-6"), ease: IN, immediateRender: false }, at(288));
+        tl.fromTo("#badge-dark", { opacity: 0 }, { opacity: 1, duration: f("duration-6"), ease: IN }, at(288));
+
+        // 비트 8 (294–372f): 단어 5개 motion-pop, 간격 duration-9
+        ["#ew1", "#ew2", "#ew3", "#ew4", "#ew5"].forEach((id, i) => {
+          tl.fromTo(id, { opacity: 0 }, { opacity: 1, ...pop }, at(294 + i * stagger));
+        });
+
+        // 비트 9 (372–378f): 어두워지며 퇴장 motion-pop (curve-in)
+        tl.fromTo("#end-line-text", { opacity: 1 }, { opacity: 0, ...popOut }, at(372));
+
+        // 비트 10 (378–450f): 로고 motion-pop → 보조 줄 motion-pop
+        tl.fromTo("#logo-wrap", { opacity: 0 }, { opacity: 1, ...pop }, at(378));
+        tl.fromTo("#end-sub", { opacity: 0 }, { opacity: 1, ...pop }, at(384));
+
+        tl.set({}, {}, 15);
+
+        // 타임라인은 동기로 등록한다. 폰트(document.fonts.ready) · 이미지 · iframe 부품은 런타임이 첫 프레임 전에 기다린다
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

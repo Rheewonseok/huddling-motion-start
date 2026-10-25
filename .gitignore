@@ -1,1 +1,6 @@
 .DS_Store
+
+# make-video 중간 파일
+out/*/_frames/
+out/*/.hyperframes/
+out/*/preview.mp4
